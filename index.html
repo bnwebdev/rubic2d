@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html>  
+    <head>
+	    <title></title>
+	    <meta charset="utf-8">
+      <script>
+function getGreater(a, b) {
+  return b > a? b: a;
+}
+// 2020.06.20 04:58
+
+function getLesser(a, b) {
+  return a > b? b: a;
+}
+// 2020.06.20 04:58
+
+function rand(minimum, maximum){
+  var max, min;
+  if(minimum == undefined){
+    return Math.random();
+  } else if(maximum == undefined){
+    max = minimum;
+    min = 0;
+  } else {
+    max = getGreater(minimum, maximum);
+    min = getLesser(minimum, maximum);
+  }
+  return Math.floor(min + Math.random() * (max + 1 - min));
+}
+// 2020.06.20 04:58
+
+function id(id, elem){
+	if(elem == null){
+		return document.getElementById(id);
+	}
+  var id_ = elem;
+  var elem_ = id;
+  elem_.id = id_;
+  return elem_;
+}
+
+// 2020.06.20 04:58
+function tag(tag, create = false){
+  if(create){
+    return document.createElement(tag);
+  } else {
+    var tags = document.getElementsByTagName(tag);
+    if(tag === "body" || tag === "title" || (tag === "canvas" && tags.length === 1)){
+      return tags[0];
+    }
+    return tags;
+  }
+}
+//2020.06.17 04:01
+
+function esclass(element, class_){
+  var cl_ = element;
+  if(class_ !== undefined){
+    element["classList"].add(class_);
+    return element;
+  }
+  return document.getElementsByClassName(cl_); 
+}
+//2020.06.17 04:01
+
+function eclass(class_, iter = 0){
+  var elements = esclass(class_);
+  if(elements.length === 0){
+    throw TypeError("Class ." + class_ + " not found");
+  }
+  while(iter < 0){
+    iter = elements.length + iter;
+  }
+  while(iter >= elements.length){
+    iter -= elements.length;
+  }
+  return elements[iter];
+}
+//2020.06.17 04:01
+
+function add(child, element = document.body, isChild = true, func){
+  if(Array.isArray(child) || child.toString() == "[object HTMLCollection]"){
+    if(child.length === 0){
+      return child;
+    }
+    for(var s in child){
+      add(child[s], element, isChild, func);
+    }
+    if(isChild){
+        return child;
+    }
+    return element;
+  }
+  element[func](child);
+  if(isChild){
+    return child;
+  }
+  return element;
+}
+//2020.06.17 04:01
+
+function remove(elem){
+	if(elem.nodeName === "HEAD" || 
+		 elem.nodeName === "BODY" || 
+		 elem.nodeName === "HTML"){
+		throw TypeError("Can`t remove " + elem.nodeName);
+	}
+	elem.parentNode.removeChild(elem);
+	return true;
+}
+
+function app(child, element, isChild){
+  if(element === false){
+    element = document.body;
+    isChild = false;
+  }
+  return add(child, element, isChild, "append");
+}
+//2020.06.17 04:01
+
+function prep(child, element = document.body, isChild = true){
+  if(element === false){
+    element = document.body;
+    isChild = false;
+  }
+  return add(child, element, isChild, "prepend");
+}
+//2020.06.17 04:01
+
+function attr(elems, objAttributes){
+  if(Array.isArray(elems) || elems.toString() == "[object HTMLCollection]"){
+    for(var i = 0; i < elems.length; i++){
+      var elem = elems[i];
+      for(var key in objAttributes){
+         elem.setAttribute(key, objAttributes[key]);
+      }
+    }
+    return elems;
+  }
+  for(var key in objAttributes){
+    if(key === "src"){
+      elems[key] = objAttributes[key];
+    }
+    elems.setAttribute(key, objAttributes[key]);
+  }
+  return elems;
+}
+//2020.06.17 04:01
+
+function css(elems, objStyles){
+  if(Array.isArray(elems) || elems.toString() == "[object HTMLCollection]"){
+    for(var i = 0; i < elems.length; i++){
+      var elem = elems[i];
+      for(var key in objStyles){
+         elem["style"][key] = objStyles[key];
+      }
+    }
+    return elems;
+  }
+  for(var key in objStyles){
+    elems["style"][key] = objStyles[key];
+  }
+  return elems;
+}
+//2020.06.17 04:01
+
+function html(elem, text, 
+							iter = 0, 
+							numDelete = elem.innerHTML.length){
+	let txt = elem.innerHTML;
+	
+	if(text == undefined){
+		return txt;
+	}
+	
+	const copyTxt = txt;
+	txt = txt.slice(0, iter);
+	txt += text + copyTxt.slice(iter + numDelete, html(elem).length);	
+	elem.innerHTML = txt;
+	return elem;
+}
+// 2020.06.20 20:55
+
+function text(elem, text, 
+							iter = elem.innerText.length, 
+							numDelete = 0){
+							
+	let txt = elem.innerText;
+	
+	if(text == undefined) return txt;
+
+	const inner = elem.innerHTML;
+	
+	let dIt = 0;
+	for(let i = 0; i <= iter; i++){
+		while(txt[i] !== inner[i + dIt]){
+			dIt++;
+		} 
+	}
+	let relativeNumDelete = numDelete;
+	const endNumDelete = iter + numDelete;
+	for(let i = iter; i < endNumDelete; i++){
+		if(txt[i] !== inner[i + dIt]){
+			relativeNumDelete = i - iter; 
+			break;
+		} 
+	}
+	
+	const relIt = iter + dIt;
+	
+	dIt = 0;
+	let dNum = numDelete - relativeNumDelete;
+	while(dNum > 0){
+		while(txt[iter + relativeNumDelete] !== inner[relIt + relativeNumDelete + dIt]){
+			dIt++;
+		}
+		html(elem, "", relIt + relativeNumDelete + dIt, 1);
+		dNum--;
+	}
+	
+	html(elem, text, relIt, relativeNumDelete);
+	return elem;
+}
+// 2020.06.20 02:41
+
+
+function event(elem, event, func, once = false){
+	elem.addEventListener(event, func, {once: once});
+	return elem;
+}
+// 2020.06.20 10:52
+
+function revent(elem, event){
+	elem.removeEventListener(event, func);
+	return elem;
+}
+// 2020.06.20 10:52
+
+function script(src){
+  const urlScript = getFullUrl(src);
+  const hasScript = (Array.from(esclass("script"))).findIndex((elem)=>elem.src === urlScript) !== -1;
+  if(hasScript){
+  	return false;
+  }
+  const script = tag("script", 1);
+  attr(script, {src: src});
+  esclass(script, "script");
+  
+  if(!id("scripts")){
+    const main = tag("div", 1);
+    id(main, "scripts");
+    app(main);
+  }
+  app(script, id("scripts"));
+  return true;
+}
+//2020.06.17 04:01
+
+function iScript(inputUrl, outputUrl){
+	if(inputUrl === undefined){
+		throw TypeError("inputScript(): inputUrl is undefined");
+	}
+	if(inputUrl === outputUrl){
+		throw TypeError(
+		"inputScript(): inputUrl === outputUrl: " + inputUrl)
+	}
+	let scripts = Array.from(tag("script"));
+
+	const ifu = getFullUrl(inputUrl);
+	const itInput  = scripts.findIndex((elem)=>elem.src === ifu);
+	
+	if(itInput === -1){
+			script(inputUrl);
+	} else if(scripts[itInput].parentNode.id !== "scripts"){
+			scripts[itInput].parentNode.removeChild(scripts[itInput]);
+			script(inputUrl);
+	}
+	
+	if(outputUrl === undefined) return true;
+	
+	const ofu = getFullUrl(outputUrl);
+	const itOutput = scripts.findIndex((elem)=>elem.src === ofu);
+	
+	if(itOutput === -1){
+		script(outputUrl);
+		return false;
+	} else if(scripts[itOutput].parentNode.id !== "scripts"){
+			scripts[itOutput].parentNode.removeChild(scripts[itOutput]);
+			script(outputUrl);
+			return false;
+	}
+	
+	if(itInput === -1){
+		 scripts[itOutput].parentNode.removeChild(scripts[itOutput]);
+		 script(outputUrl);
+		 return false;
+	}
+	
+	const isInputAfter = itInput > itOutput;
+	const isOutputAfter = !isInputAfter; 
+	
+	if(isOutputAfter)	return true;
+
+	if(isInputAfter){
+		scripts[itOutput].parentNode.removeChild(scripts[itOutput]);
+		script(outputUrl);
+		return false;
+	}
+}
+// 2020.06.20 20:24
+
+function Loop(time = 1){
+	this.list = [];
+	this.speed = time;
+	Object.defineProperty(this, "add", {
+		set(func) {
+			this.list.push(func);
+		}
+	});
+	this.count = 0;
+	this.start = function(){
+		const list = this.list;
+		let speed = this.speed;
+		if(this.count < speed){
+			this.count = this.count + 1;
+			return false;
+		}
+		this.count = 0;
+		for(const func of list){
+			func();
+		}
+		return true;
+	}
+}
+// 2020.06.20 21:35
+
+
+function getFullUrl(url){
+	if(url === undefined){
+		throw TypeError("getFullUrl(url): url is undefined");
+	}
+	if( url.indexOf("http://") == 0  || 
+		  url.indexOf("https://") == 0 || 
+		  url.indexOf("file:///") == 0	  ) return url;
+	
+	let docURL = document.URL;
+	
+	const slash = docURL.indexOf("///") === -1? "//": "///";
+	
+	docURL = docURL.split(slash);
+
+	const protocol = docURL.shift() + slash;
+	docURL = docURL[0].split("/");
+	docURL.pop();//remove name document html
+		
+	const isFileProtocol = protocol === "file:///";
+
+	const direct = docURL.shift(); //will add address site at end (it is not for file:)
+																 
+	let fullUrl = url.split("/");
+	
+	if(url.charAt(0) === "/"){
+		fullUrl.shift();
+		return isFileProtocol? 
+		protocol + fullUrl.join("/"):
+		protocol + direct + "/" + fullUrl.join("/");
+	} 
+	
+	const countDoublePoints = fullUrl.filter((item)=>item == "..").length;
+	
+	isFileProtocol? docURL.unshift(direct): true;
+	for(var i = countDoublePoints; i > 0; i--){
+		fullUrl.shift();
+		docURL.pop();
+	}
+	
+	isFileProtocol? true: docURL.unshift(direct);
+	if(fullUrl[0] === undefined){
+		throw TypeError("getFullUrl(): wrote invalid way to file " + url);
+	}
+	return docURL.length === 0? 
+	protocol + fullUrl.join("/"):
+	protocol + docURL.join("/") + "/" + fullUrl.join("/");	
+}
+// 2020.06.20 08:21
+
+//added css, attr, html, text in HTMLElemets for cascading call
+Object.defineProperty(HTMLElement.prototype, "css", {
+		value: function(objStyle){
+			return css(this, objStyle);
+		}
+});
+Object.defineProperty(HTMLElement.prototype, "attr", {
+		value: function(objAttributes){
+			return attr(this, objAttributes);
+		}
+});
+Object.defineProperty(HTMLElement.prototype, "html", {
+		value: function(text, iter, numDelete){
+			return html(this, text, iter, numDelete);
+		}
+});
+Object.defineProperty(HTMLElement.prototype, "text", {
+		value: function(text_, iter, numDelete){
+			return text(this, text_, iter, numDelete);
+		}
+});
+// 2020.06.20 02:24
+
+//-----------------------
+
+//Последнее исправление
+// 2020.06.20 02:25
+      </script>
+    </head>
+    <body>
+	     <script>
+'use strict';
+
+class Face{
+	constructor(color){
+		this.color = color;
+	}
+}
+
+class CenterFace{
+	constructor(color, size = 1){
+		this._size = size;
+		this._addFace(color);
+	}
+	size(){
+		return this._size;
+	}
+	_addFace(color){
+		if(this._size > this.body.length){
+			this.body.push(new Face(color));
+		} else {
+			throw new Error("Add new color cant")
+		}
+	}
+	swap(objCenter, i = 0){
+		if(objCenter.hasOwnProperty("body") && objCenter.body.length >= this.size() ){
+			const lastFirst = this.body[i].color;
+			this.body[i].color = objCenter.body[i].color;
+			objCenter.body[i].color = lastFirst;
+		} else {
+			throw new Error("Obj to swap dont have body or his body < size");
+		} 
+	}
+	body = [];
+}
+
+class SideFace extends CenterFace{
+	constructor(fColor, sColor, size = 2){
+		super(fColor, size);
+		this._addFace(sColor);
+	}
+	swap(objSide, i = 1){
+		if(i === 1){
+			super.swap(objSide);
+		}
+		super.swap(objSide, i);
+	}
+}
+
+class AngularFace extends SideFace{
+	constructor(fColor, sColor, tColor, size = 3){
+		super(fColor, sColor, size);
+		this._addFace(tColor);
+	}
+	swap(objSide, i = 2){
+		if(i === 2){
+			super.swap(objSide);
+		}
+		super.swap(objSide, i);
+	}
+}
+
+
+function RubicFaces() {
+	function createCenters(){
+		const arr = [];
+		for(let i = 0; i < 6; i++){
+			arr.push(new CenterFace(i));
+		}
+		return arr;
+	};
+	function createSides(){
+		const arr = 
+						[
+							[0, 2], [0, 4], [0, 3], [0, 5],
+							[1, 3], [1, 4], [1, 2], [1, 5],
+							[2, 4], [4, 3], [3, 5], [5, 2]
+						];
+		return arr.map(elem=> new SideFace(...elem));				
+	};
+	function createAngulars(){
+		const arr = 
+						[
+						  [0, 2, 4], [0, 4, 3], [0, 3, 5], [0, 5, 2], 
+						  [1, 3, 4], [1, 4, 2], [1, 2, 5], [1, 5, 3]
+						];
+		return arr.map(elem=>new AngularFace(...elem));
+	};
+	
+	this._createCenters = createCenters;
+	this._createSides = createSides;
+	this._createAngulars = createAngulars;
+	
+	
+	this.centers = createCenters();
+	this.sides = createSides();
+	this.angulars = createAngulars() 
+}
+
+function UnSideFace(objSideFace){
+	this.body = [objSideFace.body[1], objSideFace.body[0]];
+	this.size = function(){
+		return this.body.length;
+	};
+	this.swap = objSideFace.swap;
+	this.prototype = SideFace;
+}
+
+function UnAngularFace(objAngularFace, main){
+	function pos(main, i){
+		return main+i > 2? (main+i)%main: main+i;
+	}
+	this.body = [
+							 	objAngularFace.body[pos(main, 0)], 
+							 	objAngularFace.body[pos(main, 1)], 
+							 	objAngularFace.body[pos(main, 2)]
+							];
+	this.size = function(){
+		return this.body.length;
+	};
+	this.obj = objAngularFace;
+	this.swap = objAngularFace.swap;
+	this.prototype = SideFace;
+}
+
+
+function Side(objCenter, {l, u, r, d}, {lu, ur, rd, dl}, isSideSide = true){
+	this.isSideSide = isSideSide;
+	this.center = objCenter;
+	this.rect = [l, lu, u, ur, r, rd, d, dl];
+	this.getSide = function(){
+		const colors = this.rect.map(elem=>elem.body[0].color);
+		colors.push(this.center.body[0].color);
+		return colors;
+	}
+	function swaps(fi, se, th, fo){
+			fi.swap(se);
+			th.swap(fo);
+			fi.swap(th);
+	}
+	this.corectAngular = function(...angObjs){
+		if(this.isSideSide){
+			function cor(angObj){
+				let c = angObj.body[1].color;
+				angObj.body[1].color = angObj.body[2].color;
+				angObj.body[2].color = c;
+			}
+			angObjs.forEach(angObj=>cor(angObj));
+		}
+	}
+	this.turnClockwise = function(){
+		const [l, lu, u, ur, r, rd, d, dl] = this.rect;
+		swaps(l, u, r, d);
+		swaps(lu, ur, rd, dl);
+		this.corectAngular(lu, ur, rd, dl);
+	}
+	this.turnCounterClockwise = function(){
+		const [l, lu, u, ur, r, rd, d, dl] = this.rect;
+		swaps(d, r, u, l);
+		swaps(dl, rd, ur, lu);		
+		this.corectAngular(lu, ur, rd, dl);
+	}
+}
+
+function Line({fiCenter, seCenter, thCenter, foCenter}, 
+							{fiSide, seSide, thSide, foSide}){
+	this.centers = [fiCenter, seCenter, thCenter, foCenter];
+	this.sides = [fiSide, seSide, thSide, foSide];
+	function swaps(fi, se, th, fo){
+			fi.swap(se);
+			th.swap(fo);
+			fi.swap(th);
+	}
+	this.turnClockwise = function(){
+		{
+			const [fi, se, th, fo] = this.centers;
+			swaps(fi, se, th, fo);
+		}
+		{
+			const [fi, se, th, fo] = this.sides;
+			swaps(fi, new UnSideFace(se), th, new UnSideFace(fo));
+		}
+	}
+	this.turnCounterClockwise = function(){
+		{
+			const [fi, se, th, fo] = this.centers;
+			swaps(fo, th, se, fi);
+		}
+		{
+			const [fi, se, th, fo] = this.sides;
+			swaps(fo, new UnSideFace(th), se, new UnSideFace(fi));
+		}
+	}
+}
+
+function Rubic(){
+		const rubicFaces = new RubicFaces();
+		this.centers = rubicFaces.centers;
+		this.sides = rubicFaces.sides;
+		this.angulars = rubicFaces.angulars;
+		this.getSides = function(){
+			const sides = [];
+			const all = ["fSide", "bSide", "lSide", "rSide", "uSide", "dSide"];
+			all.forEach(side=>sides.push( this[side].getSide() ) );
+			return sides;
+		}
+		this.vLine = new Line( {
+															fiCenter: this.centers[0], 
+															seCenter: this.centers[4], 
+															thCenter: this.centers[1], 
+															foCenter: this.centers[5]
+													 }, 
+													 {
+													 		fiSide: this.sides[1], 
+													 		seSide: this.sides[5], 
+													 		thSide: this.sides[7], 
+													 		foSide: this.sides[3]
+													 } );
+		this.hLine = new Line( {
+															fiCenter: this.centers[0], 
+															seCenter: this.centers[2], 
+															thCenter: this.centers[1], 
+															foCenter: this.centers[3]
+													 }, 
+													 {
+													 		fiSide: this.sides[0], 
+													 		seSide: this.sides[6], 
+													 		thSide: this.sides[4], 
+													 		foSide: this.sides[2]
+													 } );
+		this.oLine = new Line( {
+															fiCenter: this.centers[2], 
+															seCenter: this.centers[4], 
+															thCenter: this.centers[3], 
+															foCenter: this.centers[5]
+													 },
+													 {
+													 		fiSide: this.sides[8], 
+													 		seSide: new UnSideFace(this.sides[9]), 
+													 		thSide: this.sides[10], 
+													 		foSide: new UnSideFace(this.sides[11])
+													 } );
+		
+		this.fSide = new Side( this.centers[0], 
+													 {
+													 		l: this.sides[0], 
+													 		u: this.sides[1], 
+													 		r: this.sides[2], 
+													 		d: this.sides[3]
+													 }, 
+													 {
+													 		lu: this.angulars[0], 
+													 		ur: this.angulars[1], 
+													 		rd: this.angulars[2], 
+													 		dl: this.angulars[3]
+													 }, false );
+		this.bSide = new Side( this.centers[1], 
+													 {
+													 		l: this.sides[4], 
+													 		u: this.sides[5], 
+													 		r: this.sides[6], 
+													 		d: this.sides[7]
+													 }, 
+													 {
+													 		lu: this.angulars[4], 
+													 		ur: this.angulars[5], 
+													 		rd: this.angulars[6], 
+													 		dl: this.angulars[7]
+													 }, false );
+		
+		this.lSide = new Side( this.centers[2], 
+													 {
+													 		l: this.sides[8], 
+													 		u: new UnSideFace( this.sides[0] ), 
+													 		r: new UnSideFace( this.sides[11] ), 
+													 		d: new UnSideFace( this.sides[6] )
+													 }, 
+													 {
+													 		lu: new UnAngularFace(this.angulars[0], 1), 
+													 		ur: new UnAngularFace(this.angulars[3], 2), 
+													 		rd: new UnAngularFace(this.angulars[6], 1), 
+													 		dl: new UnAngularFace(this.angulars[5], 2)
+													 } );
+		this.rSide = new Side( this.centers[3], 
+													{
+													 		l: this.sides[10], 
+													 		u: new UnSideFace( this.sides[2] ), 
+													 		r: new UnSideFace( this.sides[9] ), 
+													 		d: new UnSideFace( this.sides[4] )
+													 }, 
+													 {
+													 		lu: new UnAngularFace(this.angulars[2], 1), 
+													 		ur: new UnAngularFace(this.angulars[1], 2), 
+													 		rd: new UnAngularFace(this.angulars[4], 1), 
+													 		dl: new UnAngularFace(this.angulars[7], 2)
+													 } );
+		
+		this.uSide = new Side( this.centers[4], 
+													 {
+													 		l: this.sides[9], 
+													 		u: new UnSideFace( this.sides[1] ), 
+													 		r: new UnSideFace( this.sides[8] ), 
+													 		d: new UnSideFace( this.sides[5] )
+													 }, 
+													 {
+													 		lu: new UnAngularFace(this.angulars[1], 1), 
+													 		ur: new UnAngularFace(this.angulars[0], 2), 
+													 		rd: new UnAngularFace(this.angulars[5], 1), 
+													 		dl: new UnAngularFace(this.angulars[4], 2)
+													 } );
+		this.dSide = new Side( this.centers[5], 
+													 {
+													 		l: this.sides[11], 
+													 		u: new UnSideFace( this.sides[3] ), 
+													 		r: new UnSideFace( this.sides[10] ), 
+													 		d: new UnSideFace( this.sides[7] )
+													 },
+													 {
+													 		lu: new UnAngularFace(this.angulars[3], 1), 
+													 		ur: new UnAngularFace(this.angulars[2], 2), 
+													 		rd: new UnAngularFace(this.angulars[7], 1), 
+													 		dl: new UnAngularFace(this.angulars[6], 2)
+													 } );
+}
+function ctx(iter = 0, context = "2d"){
+	if(iter.toString() === "[object HTMLCanvasElement]"){
+		return iter.getContext(context);
+	}
+  if(!Number.isInteger(iter)){
+    context = iter;
+    if(!Number.isInteger(context)){
+      iter = 0;
+    } else {
+      iter = context;
+    }
+  }  
+  var canv = tag("canvas");
+  if(canv.toString() === "[object HTMLCollection]"){
+    canv = canv[iter];
+  }
+  return canv.getContext(context)
+}
+// 2020.06.20 10:12
+
+function canv(width, height, center = false){
+  var canv = tag("canvas", 1);
+  canv.width = width;
+  canv.height = height;
+  if(id("canvases") == null){
+    var div = tag("div", 1);
+    div.id = "canvases";
+    prep(div);
+  }
+  app(canv, id("canvases"));
+  if(center){
+	  css(canv, {position: "fixed", 
+	  					top: "50%", 
+	  					left: "50%", 
+	  					transform: "translate(-50%, -50%)", 
+	  					border: "2px solid white"});
+  }
+  return canv;
+}
+// 2020.06.20 01:18
+
+
+function Rect(x, y, width, height){
+
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = height;
+  
+  this.fill = function(ctx){
+  	var lastColor = ctx.fillStyle;
+  	if(this.isColor){
+  		ctx.fillStyle = this.color;
+  	}
+  	ctx.fillRect(this.x, this.y, this.width, this.height);
+  	ctx.fillStyle = lastColor;
+  	return ctx;
+  };
+  this.stroke = function(ctx){
+  	var lastColor = ctx.strokeStyle;
+  	if(this.isColor){
+  		ctx.strokeStyle = this.color;
+  	}
+  	this.rect(ctx).stroke()
+  	ctx.strokeStyle = lastColor;
+  	return ctx;
+  };
+  this.rect = function(ctx, beginPath = true){
+  	if(beginPath) ctx.beginPath();
+  	ctx.rect(this.x, this.y, this.width, this.height);
+  	return ctx;
+  }
+  
+  Object.defineProperty(this, "color", {
+  	set(color){
+  		if(color !== null && color !== false){
+  			this.color_ = color;
+  			this.isColor = true;
+  			return true;
+  		}
+  		this.isColor = false;
+  		return false;
+  	},
+  	
+  	get(){
+  		return this.color_;
+  	}
+  });
+  
+  this.color_;
+  this.isColor = false;
+};
+// 2020.06.20 01:43
+
+function Circle(x, y, radius, begin_rad = 0, end_rad = 2 * Math.PI){
+
+  this.x = x;
+  this.y = y;
+  this.r = radius;
+  this.begin = begin_rad;
+  this.end = end_rad;
+  
+  this.arc = function(ctx, beginPath = true){
+  	if(beginPath) ctx.beginPath();
+  	ctx.arc(this.x, this.y, this.r, this.begin, this.end);
+  	return ctx;
+  };
+  
+  this.fill = function(ctx){
+  	var c_lor = ctx.fillStyle;
+	  if(this.isColor) ctx.fillStyle = this.color;
+  	this.arc(ctx).fill();
+  	ctx.fillStyle = c_lor;
+  	return ctx;
+  };
+  
+  this.stroke = function(ctx){
+  	var c_lor = ctx.strokeStyle;
+  	if(this.isColor) ctx.strokeStyle = this.color;
+  	this.arc(ctx).stroke();
+  	ctx.strokeStyle = c_lor;
+  	return ctx;
+  };
+  
+  Object.defineProperty(this, "color", {
+  	set(color){
+  		if(color !== null && color !== false){
+  			this.color_ = color;
+  			this.isColor = true;
+  			return true;
+  		}
+  		this.isColor = false;
+  		return false;
+  	},
+  	
+  	get(){
+  		return this.color_;
+  	}
+  });
+  
+  this.color_;
+  this.isColor = false;
+};
+// 2020.06.18 11:06
+
+//-----------------------
+// Последняя правка
+// 2020.06.20 01:43
+function RubicColor(front, back, left, right, up, down) {
+	this[front] = 0;
+	this[back] = 1;
+	this[left] = 2;
+	this[right] = 3;
+	this[up] = 4;
+	this[down] = 5;
+	this._allColors = [front, back, left, right, up, down];
+	this.getNumber = function(_color){
+		if(this.has(_color, false)){
+			return this[_color];
+		} else {
+			throw new Error(`Color ${_color} is had not`);
+		}
+	};
+	this.getColor = function(_number){
+		if(this.has(_number)){
+			return this._allColors[_number];
+		} else {
+			throw new Error(`Invalid number for getColor`);
+		}
+	};
+	this.has = function(color, isNumber = true){
+		if(isNumber){
+			return color >= 0 && color <= 5;
+		} else {
+			return this.hasOwnProperty(color);
+		}
+	};
+	this.getNumbers = function(){
+		return [0, 1, 2, 3, 4, 5];
+	}
+	this.swapColor = function(last, new_){
+		if(this.has(last, false) &&
+			 !(this.has(new_, false) && new_ !== last) ){
+			 const n = this[last];
+			 delete this[last];
+			 this._allColors.splice(n, 1, new_);
+			 this[new_] = n;
+		} else {
+			throw new Error("Or last color is had not, or new_ color is had yet");
+		}
+	}
+}
+
+function getSideColor(cube){
+	const sides = ["fSide", "bSide", "lSide", "rSide", "uSide", "dSide"];
+	let all = [];
+	sides.forEach(cmd=>{
+												all.push(
+														cube[cmd].rect
+														.map(e=>e.body[0].color)
+														.concat(cube[cmd].center.body[0].color)); 
+										 });
+	return all;
+}
+
+function createCanvas(){
+	let width = innerWidth;
+	let height = innerHeight;
+	
+	let canvas = canv(width, height);
+	id("canvases").css({position: "fixed", top: "0px", left: "0px"});
+	ctx().fillRect(0, 0, width, height);
+}
+
+function sel(selector, it = 0){
+	return document.querySelectorAll(selector)[it];
+}
+
+function getLoop(spd = 0){
+	let speed = 0;
+	return (func)=>{
+		function f(){
+		if(f.isStart){
+			window.requestAnimationFrame(f);
+		}
+		if(speed < spd){
+			speed++;
+			return;
+		}
+		speed = 0;
+		func();
+		}
+		f.setSpeed = function(sp){
+			spd = sp
+		};
+		f.isStart = true;
+		f.end = function(){
+			f.isStart = false;
+		}
+		f.start = function(){
+			f.isStart = true;
+			f();
+		}
+		window.requestAnimationFrame(f);
+		return f;
+	}
+}
+
+
+function getSizeSide(){
+	let w = innerWidth;
+	let h = innerHeight;
+	w /= 3;
+	h /= 4; 
+	return w > h? h: w;
+}
+
+function getCord(e){
+	return [e.clientX, e.clientY]
+}
+
+function getPositionTopSide(size){
+	let x = (innerWidth - size)/2;
+	let y = (innerHeight - 4*size)/2;
+	return [x, y];
+}
+function toDraw(COLOR){
+	return function(ctx, x, y, size, arrColor){
+		const style = ctx.fillStyle;
+		ctx.fillStyle = "black";
+		ctx.fillRect(x, y, size, size);
+		ctx.fillStyle = "white";
+		
+		let z = 3;
+		
+		ctx.fillRect(x + z, y + z, size - z * 2, size - z * 2);
+		
+		function shift(firstNumber){
+			return function(sizeShift){
+				return function(xShift = 0){
+					return firstNumber + sizeShift * xShift;
+				}
+			}
+		}
+	
+		const sizeFace = size/3;	
+		x = shift(x)(sizeFace);
+		y = shift(y)(sizeFace);
+		
+		const pos = [	
+												[x(), y(1)], 
+												[x(), y()],
+												[x(1), y()],
+												[x(2), y()],
+												[x(2), y(1)],
+												[x(2), y(2)],
+												[x(1), y(2)],
+												[x(), y(2)],
+												[x(1), y(1)] 
+								];
+		let i = 0;
+		arrColor.forEach(n=>{
+			const color = COLOR.getColor(n);
+			ctx.fillStyle = "white";
+			ctx.fillRect(pos[i][0] + z, pos[i][1] + z, sizeFace - z * 2, sizeFace - z * 2);
+			
+			ctx.fillStyle = "black";
+			ctx.fillRect(pos[i][0] + z + 1, pos[i][1] + z + 1, 
+			             sizeFace - (z + 1 ) * 2, sizeFace - (z + 1 ) * 2);
+			
+			ctx.fillStyle = color;
+			ctx.fillRect(pos[i][0] + z + 2, pos[i][1] + z + 2, 
+									 sizeFace - (z + 2) * 2, sizeFace - (z + 2) * 2);
+			ctx.fillStyle = style;
+			i++;
+		})
+	}
+}
+
+function resize(){
+	sel("canvas").width = innerWidth; 
+	sel("canvas").height = innerHeight; 
+	ctx().fillRect(0, 0, innerWidth, innerHeight);
+}
+
+const COLOR = new RubicColor("white", "yellow", "red", "orange", "green", "blue");
+let cube = new Rubic();
+
+createCanvas();
+window.onresize = resize;
+
+const loop = getLoop();
+
+let loop1 = loop(drawCubic);
+
+
+function drawCubic(){
+	let size = getSizeSide();
+	const [x, y] = getPositionTopSide(size);
+	const [fSide, bSide, lSide, rSide, uSide, dSide] = cube.getSides();
+	
+	function cor(arr, it){
+		let newArr = arr.splice(0, it);
+		newArr.push(arr.splice(-1, 1)[0])
+		arr.push(...newArr)
+		return arr;
+	}
+	const drawSide = toDraw(COLOR);
+	
+	drawSide(ctx(), x, y, size, cor(uSide, 4) );
+	drawSide(ctx(), x, y + size, size, fSide);
+	drawSide(ctx(), x, y + 2*size, size, dSide);
+	drawSide(ctx(), x, y + 3*size, size, cor(bSide, 4) );
+	
+	drawSide(ctx(), x - size, y + size, size, cor(lSide, 6) );
+	drawSide(ctx(), x + size, y + size, size, cor(rSide, 2) );
+	
+	drawButtonMixed(ctx(), x + size*7/4 - 2, y + 2, size/4);
+}
+
+function drawButtonMixed(ctx, x, y, size){
+	const style = ctx.fillStyle;
+	ctx.fillStyle = "white";
+	ctx.fillRect(x, y, size, size)
+	ctx.fillStyle = style;
+	return ctx;
+}
+const ControlBlock = {
+	cube: cube,
+	size: getSizeSide,
+	top: function(){
+		return getPositionTopSide(this.size())
+	},
+	side: ["fSide", "bSide", "lSide", "rSide", "uSide", "dSide", "vLine", "hLine", "oLine"],
+	turn: function(nSide, isClockwise = true){
+		if(nSide < 0 || nSide > 8){
+			throw new Error(`Side with number ${nSide} is not been`);
+		}
+		const side = this.side[nSide];
+		if(isClockwise){
+			cube[side].turnClockwise();
+		} else {
+			cube[side].turnCounterClockwise();
+		}
+	},
+	x: 0,
+	y: 0,
+	canTurn: false,
+	shift: function(firstNumber){
+		return function(sizeShift){
+			return function(xShift = 0){
+				return firstNumber + sizeShift * xShift;
+			}
+		}
+	},
+	include: function(xIn, yIn, x, y, width, height = width){
+		return xIn >= x && xIn <= x + width && yIn >= y && yIn <= y + height;
+	},
+	getPositionSides: function(){
+		const size = this.size();
+		let [x, y] = this.top();
+		x = this.shift(x)(size);
+		y = this.shift(y)(size);
+		return [
+							{x: x(), y: y(1), type: "fSide"}, 
+							{x: x(), y: y(3), type: "bSide"},
+							{x: x(-1), y: y(1), type: "lSide"},
+							{x: x(1), y: y(1), type: "rSide"},
+							{x: x(), y: y(), type: "uSide"},
+							{x: x(), y: y(2), type: "dSide"},
+						];
+	},
+	getSide: function(xIn, yIn){
+		let sides = this.getPositionSides();
+		const size = this.size();
+		sides = sides.filter(e=>this.include(xIn, yIn, e.x, e.y, size ));
+
+		return sides.length === 1? sides[0]: sides.length === 0? null: new Error("Controler getSide error");
+	},
+	turnSide: null,
+	touchElem: null,
+	setStart: function(xStart, yStart){
+		const side = this.getSide(xStart, yStart);
+		if(side){
+			const size = this.size();
+			let	[x, y] = [side.x, side.y];
+					
+			const sizeFace = size/3;
+			
+			x = this.shift(x)(sizeFace);
+			y = this.shift(y)(sizeFace);
+			
+			const pos = [	
+											{x: x(), y: y(), type: 0}, 
+											{x: x(1), y: y(), type: 1},
+											{x: x(2), y: y(), type: 2},
+											{x: x(), y: y(1), type: 3},
+											{x: x(1), y: y(1), type: 4},
+											{x: x(2), y: y(1), type: 5},
+											{x: x(), y: y(2), type: 6}, 
+											{x: x(1), y: y(2), type: 7},
+											{x: x(2), y: y(2), type: 8},
+									];
+			
+			function corect(n, sType){
+				if(sType == "fSide" || sType == "dSide"){
+					return n;
+				} else {
+					switch(sType){
+						case "uSide":
+						case "bSide":
+							n = [8, 7, 6, 5, 4, 3, 2, 1, 0][n];
+							break;
+						case "lSide":
+							n = [6, 3, 0, 7, 4, 1, 8, 5, 2][n];
+							break;
+						case "rSide":
+							n = [2, 5, 8, 1, 4, 7, 0, 3, 6][n];
+					}
+					return n;
+				}
+			}
+			
+			this.x = xStart;
+			this.y = yStart;
+			this.turnSide = side;
+			this.touchElem = corect(pos.filter(e=>this.include(xStart, yStart, e.x, e.y, sizeFace))
+																								.map(e=>e.type)[0], side.type);
+			this.canTurn = true;
+			this.timeTouchStart = new Date();
+		} else {
+			let [x, y] = this.top();
+			let size = this.size()/4;
+			x = this.shift(x)(size);
+			y = this.shift(y)(size);
+			
+			if(this.include(xStart, yStart, x(7) - 2, y() + 2, size)){
+				randMixed(this.cube);
+			}
+		}
+	},
+	setEnd: function(x, y){
+		if(this.canTurn){
+			let allSides = this.side;
+			function getDir(side, dir, bool){
+				let it = allSides.indexOf(side);
+				
+				function reverse(x, y, isReverse = true){
+					return function(val){
+						if(isReverse){
+							return val === x? y: x;
+						}
+						return val;
+					}
+				}
+				const arr = [
+											reverse("x", "y", false), 
+											reverse("x", "y", false),
+											reverse("x", "y"),
+											reverse("x", "y"),
+											reverse("x", "y", false),
+											reverse("x", "y", false),
+										];
+				const boolArr = [
+													reverse(true, false, false),
+													reverse(true, false),
+													function(bool){
+														return dir == "y"? bool: !bool; 
+													},
+													function(bool){
+														return dir == "x"? bool: !bool;
+													},
+													reverse(true, false),
+													reverse(true, false, false),			
+												]
+				return [arr[it](dir), boolArr[it](bool)];
+			}
+			const dx = x - this.x,
+						dy = y - this.y;
+			const mx = dx > 0? dx: -dx,
+						my = dy > 0? dy: -dy;
+			if(mx > 5 || my > 5){
+				const direction = {};
+				let arr;
+				if(mx > my){
+					arr = getDir(this.turnSide.type, "x", dx > 0);
+				} else {
+					arr = getDir(this.turnSide.type, "y", dy > 0);
+				}
+				direction.dir = arr[0];
+				direction.bool = arr[1];
+				this.willTurnSide(this.turnSide, this.touchElem, direction);	
+			} else if(new Date() - this.timeTouchStart < 300){
+				let sz = this.size()/3;
+				let [X, Y] = this.top();
+				X = this.shift(X);
+				Y = this.shift(Y);
+				
+				X = X(sz)(1);
+				Y = Y(sz)(4);
+				
+				if(this.include(this.x, this.y, X, Y, sz)){
+					toggleCenterColor(this.cube);
+				}
+			}
+			this.canTurn = false;
+		}
+	},
+	willTurnSide: function(side, elem, direction){
+		const keyForTurn = [
+				{ elem: [0, 3, 6], type: {side: "left", dir: "y"}},
+				{ elem: [0, 1, 2], type: {side: "up", dir: "x"}},
+				{ elem: [2, 5, 8], type: {side: "right", dir: "y"}},
+				{ elem: [6, 7, 8], type: {side: "down", dir: "x"}},
+				{ elem: [1, 4, 7], type: {side: "vCenter", dir: "y"}},
+				{ elem: [3, 4, 5], type: {side: "hCenter", dir: "x"}},
+		]
+		let turnKey = keyForTurn.filter(obj=>obj.elem.includes(elem) && 
+																		obj.type.dir === direction.dir)[0].type.side;
+		function reverse(bool){
+			return function(newBool){
+				if(bool){
+					return newBool;
+				} else {
+					return !newBool;
+				}
+			}
+		}
+		const clock = {
+			left: reverse(true),
+			up: reverse(false),
+			right: reverse(false),
+			down: reverse(true),
+		}
+		function isClock(side, key, bool){
+			let is = null;
+			switch(side){
+				case "fSide":
+				case "dSide":
+				case "rSide":
+					if(key == "hCenter"){
+						is = reverse(false);
+					} else {
+						is = reverse(false);
+					}	
+					break;
+				case "bSide":
+					if(key == "hCenter"){
+						is = reverse(false);
+					} else {
+						is = reverse(true);
+					}	
+					break;
+				case "lSide":
+				case "uSide":
+					if(key == "hCenter"){
+						is = reverse(false);
+					} else {
+						is = reverse(true);
+					}	
+					break;
+			}
+			return is(bool);
+		}
+		let isClockwise = clock.hasOwnProperty(turnKey)? 
+											clock[turnKey](direction.bool): 
+											isClock(side.type, turnKey, direction.bool);
+		//["fSide", "bSide", "lSide", "rSide", "uSide", "dSide", "vLine", "hLine", "oLine"]
+		const positionInMap = this.side.indexOf(side.type);
+		let turnElem = getTurnElemForSide(turnKey, positionInMap);								
+		function getTurnElemForSide(turnKey, sideIndex){
+				const elemForKey = {
+					left: 		[
+											{side: "lSide"}, 
+											{side: "rSide"}, 
+											{side: "uSide"},
+											{side: "dSide"}, 
+											{side: "rSide"}, 
+											{side: "lSide"},
+										],
+					up: 			[
+											{side: "uSide"}, 
+											{side: "uSide"},
+											{side: "fSide"},
+											{side: "fSide"},
+											{side: "fSide"}, 
+											{side: "fSide"},									
+										],
+					right: 		[
+											{side: "rSide"},
+											{side: "lSide"}, 
+											{side: "dSide"},
+											{side: "uSide"},
+											{side: "lSide"},
+											{side: "rSide"},									
+										],
+					down: 		[
+											{side: "dSide"}, 
+											{side: "dSide"},
+											{side: "bSide"},
+											{side: "bSide"},
+											{side: "bSide"},
+											{side: "bSide"},																		
+										],
+					vCenter: 	[
+											{side: "vLine"}, 
+											{side: "vLine"},
+											{side: "hLine"},
+											{side: "hLine"},
+											{side: "vLine"},
+											{side: "vLine"},
+										],
+					hCenter: 	[
+											{side: "hLine"}, 
+											{side: "hLine"},
+											{side: "oLine"},
+											{side: "oLine"},
+											{side: "oLine"},
+											{side: "oLine"},
+										]
+				}
+					return elemForKey[turnKey][sideIndex].side;
+				};
+				if(isClockwise){
+					this.cube[turnElem].turnClockwise();
+				} else {
+					this.cube[turnElem].turnCounterClockwise();
+				}
+		}
+}
+
+function startTouch(e){
+	ControlBlock.setStart(e.clientX, e.clientY);
+}
+function endTouch(e){
+	ControlBlock.setEnd(e.clientX, e.clientY);
+}
+
+function onTouch(evt) {
+  evt.preventDefault();
+  if (evt.touches.length > 1 || (evt.type == "touchend" && evt.touches.length > 0))
+    return;
+
+  var newEvt = document.createEvent("MouseEvents");
+  var type = null;
+  var touch = null;
+
+  switch (evt.type) {
+    case "touchstart": 
+      type = "mousedown";
+      touch = evt.changedTouches[0];
+      break;
+    case "touchmove":
+      type = "mousemove";
+      touch = evt.changedTouches[0];
+      break;
+    case "touchend":        
+      type = "mouseup";
+      touch = evt.changedTouches[0];
+      break;
+  }
+
+  newEvt.initMouseEvent(type, true, true, evt.target.ownerDocument.defaultView, 0,
+    touch.screenX, touch.screenY, touch.clientX, touch.clientY,
+    evt.ctrlKey, evt.altKey, evt.shiftKey, evt.metaKey, 0, null);
+  evt.target.dispatchEvent(newEvt);
+}
+
+function toggleCenterColor(cube){
+	for(let i = 0; i < 2; i++){
+		cube.lSide.turnClockwise();
+		cube.rSide.turnClockwise();
+		cube.vLine.turnClockwise();
+	}
+}
+
+function randMixed(cube){
+	const funcs = ["turnClockwise", "turnCounterClockwise"];
+	const sides = ControlBlock.side.slice(0, -3);
+	let numMove= rand(20, 50);
+	for(let i = 0; i < numMove; i++){
+		let func = funcs[rand(1)];
+		let side = sides[rand(5)];
+		cube[side][func]();
+	}
+}
+
+sel("canvas").addEventListener("mousedown", startTouch);
+sel("canvas").addEventListener("mouseup", endTouch);
+sel("canvas").addEventListener("touchstart", onTouch);
+sel("canvas").addEventListener("touchend", onTouch);
+	     </script>
+    </body>
+</html>
+    
